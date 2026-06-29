@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Omah Homestay</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans">
+
+  <header class="bg-blue-900 text-white p-6 text-center shadow-md">
+    <h1 class="text-3xl font-bold tracking-widest">OMAH HOMESTAY</h1>
+  </header>
+
+  <main class="max-w-5xl mx-auto p-6 mt-6">
+    
+    <section class="mb-16">
+      <h2 class="text-2xl font-bold mb-6 text-center border-b pb-3">Rooms</h2>
+      <div id="room-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        <p class="text-center col-span-3 text-gray-500">loading...</p>
+      </div>
+    </section>
+
+    <section class="bg-white p-8 rounded-xl shadow-lg mb-12 border border-gray-100">
+      <h2 class="text-2xl font-bold mb-8 text-center text-blue-900">Book Your Room</h2>
+      
+      <form id="bookingForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm font-semibold mb-2 text-gray-700">Full Name *</label>
+          <input type="text" id="customerName" required class="w-full p-3 border border-gray-300 rounded bg-gray-50 focus:ring-2 focus:ring-blue-900 outline-none">
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold mb-2 text-gray-700">Phone Number *</label>
+          <input type="text" id="customerPhone" pattern="[0-9]+" title="Please enter numbers only" inputmode="numeric" required class="w-full p-3 border border-gray-300 rounded bg-gray-50 focus:ring-2 focus:ring-blue-900 outline-none">
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold mb-2 text-gray-700">Check-in Date *</label>
+          <input type="date" id="checkInDate" required class="w-full p-3 border border-gray-300 rounded bg-gray-50 focus:ring-2 focus:ring-blue-900 outline-none">
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold mb-2 text-gray-700">Check-out Date *</label>
+          <input type="date" id="checkOutDate" required class="w-full p-3 border border-gray-300 rounded bg-gray-50 focus:ring-2 focus:ring-blue-900 outline-none">
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="block text-sm font-semibold mb-2 text-gray-700">Select Room *</label>
+          <select id="roomInput" required class="w-full p-3 border border-gray-300 rounded bg-gray-50 focus:ring-2 focus:ring-blue-900 outline-none cursor-pointer">
+            <option value="">loading...</option>
+          </select>
+        </div>
+
+        <div class="md:col-span-2 text-center mt-6">
+          <button type="submit" class="bg-blue-900 text-white font-bold py-3 px-10 rounded hover:bg-blue-800 transition shadow-md w-full md:w-auto">
+            Submit
+          </button>
+        </div>
+      </form>
+    </section>
+
+  </main>
+
+  <footer class="bg-gray-800 text-gray-400 text-center p-6 text-sm">
+    <p>&copy; 2026 Omah Homestay. All rights reserved.</p>
+  </footer>
+
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-3"></div>
+
+  <script>
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      
+      toast.className = `px-6 py-3 rounded shadow-lg text-white font-bold transition-all duration-300 transform translate-y-10 opacity-0 flex items-center gap-2`;
+      
+      if (type === 'success') toast.classList.add('bg-green-600');
+      if (type === 'error') toast.classList.add('bg-red-600');
+
+      toast.innerHTML = message;
+      container.appendChild(toast);
+
+      setTimeout(() => toast.classList.remove('translate-y-10', 'opacity-0'), 10);
+
+      setTimeout(() => {
+        toast.classList.add('translate-y-10', 'opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // 1. Mengambil data kamar
+    async function fetchRooms() {
+      try {
+        const response = await fetch('/api/rooms');
+        const rooms = await response.json();
+        
+        const container = document.getElementById('room-container');
+        const select = document.getElementById('roomInput');
+        
+        container.innerHTML = ''; 
+        select.innerHTML = '<option value="" disabled selected>-- Select Room --</option>'; 
+
+        if(rooms.length === 0) {
+          container.innerHTML = '<p class="text-center col-span-3 text-red-500 font-semibold">there are no rooms listed yet</p>';
+          return;
+        }
+
+        rooms.forEach(room => {
+          const imageSrc = room.imageUrl ? room.imageUrl : 'https://via.placeholder.com/500x300?text=Homestay';
+
+          container.innerHTML += `
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col overflow-hidden group hover:shadow-md transition">
+              <div class="h-48 w-full overflow-hidden bg-gray-200">
+                <img src="${imageSrc}" alt="${room.name}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+              </div>
+              
+              <div class="p-4">
+                <h3 class="font-bold text-gray-900 text-lg">${room.name}</h3>
+                <p class="text-blue-800 font-semibold mt-1">Rp ${room.price.toLocaleString('id-ID')}</p>
+              </div>
+            </div>
+          `;
+
+          select.innerHTML += `
+            <option value="${room.id}">${room.name} - Rp ${room.price.toLocaleString('id-ID')}</option>
+          `;
+        });
+      } catch (error) {
+        console.error('Failed to retrieve room data:', error);
+      }
+    }
+
+    // 2. proses Submit Booking
+    document.getElementById('bookingForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const payload = {
+        roomId: parseInt(document.getElementById('roomInput').value),
+        customerName: document.getElementById('customerName').value,
+        customerPhone: document.getElementById('customerPhone').value,
+        checkInDate: document.getElementById('checkInDate').value,
+        checkOutDate: document.getElementById('checkOutDate').value
+      };
+
+      try {
+        const response = await fetch('/api/bookings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+          showToast('Booking successful!', 'success');
+          document.getElementById('bookingForm').reset();
+        } else {
+          showToast('Booking Failed: ' + data.error, 'error');
+        }
+      } catch (error) {
+        showToast('Server error.', 'error');
+      }
+    });
+
+    fetchRooms();
+  </script>
+</body>
+</html>

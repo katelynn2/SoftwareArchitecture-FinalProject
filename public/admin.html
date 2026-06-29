@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+
+  <nav class="bg-blue-900 text-white p-4 shadow-md flex justify-between items-center relative z-20">
+    <div class="font-bold text-xl tracking-wide">ADMIN PORTAL</div>
+    <div class="space-x-4">
+      <button onclick="switchMenu('bookingSection')" class="hover:text-blue-300 font-semibold transition">Booking</button>
+      <button onclick="switchMenu('roomSection')" class="hover:text-blue-300 font-semibold transition">Manage Room</button>
+      <button onclick="logout()" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-sm font-bold transition ml-4">Logout</button>
+    </div>
+  </nav>
+
+  <main class="max-w-6xl mx-auto p-6 mt-6">
+    
+    <section id="bookingSection" class="bg-white p-6 rounded-xl shadow border border-gray-200 block">
+      <h2 class="text-2xl font-bold mb-6 text-blue-900 border-b pb-2">Booking Lists</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-gray-100 text-gray-700 text-sm">
+              <th class="p-3 border-b">Guest Name</th>
+              <th class="p-3 border-b">Phone Number</th>
+              <th class="p-3 border-b">Room</th>
+              <th class="p-3 border-b">Check-In</th>
+              <th class="p-3 border-b">Check-Out</th>
+              <th class="p-3 border-b text-center">Status</th>
+            </tr>
+          </thead>
+          <tbody id="bookingTableBody" class="text-sm">
+            <tr><td colspan="6" class="text-center p-4 text-gray-500">Load bookings...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="roomSection" class="bg-white p-6 rounded-xl shadow border border-gray-200 hidden">
+      <h2 class="text-2xl font-bold mb-6 text-blue-900 border-b pb-2">Manage Rooms</h2>
+      
+      <form id="addRoomForm" class="bg-gray-50 p-4 rounded border border-gray-200 mb-8 flex gap-4 items-end flex-wrap">
+        <div class="flex-1 min-w-[200px]">
+          <label class="block text-sm font-semibold mb-1 text-gray-700">Room Type *</label>
+          <input type="text" id="newRoomName" required placeholder="Contoh: Kamar VIP 01" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-900 outline-none">
+        </div>
+        <div class="flex-1 min-w-[150px]">
+          <label class="block text-sm font-semibold mb-1 text-gray-700">Price/night (Rp) *</label>
+          <input type="number" id="newRoomPrice" required placeholder="350000" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-900 outline-none">
+        </div>
+        <div class="flex-1 min-w-[200px]">
+          <label class="block text-sm font-semibold mb-1 text-gray-700">Room Image</label>
+          <input type="text" id="newRoomImage" placeholder="https://..." class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-900 outline-none">
+        </div>
+        <button type="submit" class="bg-green-600 text-white font-bold py-2 px-6 rounded hover:bg-green-700 transition h-[42px]">
+          + Add Room
+        </button>
+      </form>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-gray-100 text-gray-700 text-sm">
+              <th class="p-3 border-b">ID</th>
+              <th class="p-3 border-b">Room Type</th>
+              <th class="p-3 border-b">Price/night</th>
+            </tr>
+          </thead>
+          <tbody id="roomTableBody" class="text-sm">
+            <tr><td colspan="3" class="text-center p-4 text-gray-500">Load rooms...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <div id="editModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-md border border-gray-200">
+      <h3 class="text-xl font-bold mb-4 text-blue-900 border-b pb-2">Update Room</h3>
+      
+      <input type="hidden" id="editRoomId">
+      
+      <div class="mb-4">
+        <label class="block text-sm font-semibold mb-1 text-gray-700">Room Type</label>
+        <input type="text" id="editRoomName" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-900 outline-none">
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-semibold mb-1 text-gray-700">Price (Rp)</label>
+        <input type="number" id="editRoomPrice" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-900 outline-none">
+      </div>
+      <div class="mb-6">
+        <label class="block text-sm font-semibold mb-1 text-gray-700">Room Image</label>
+        <input type="text" id="editRoomImage" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-900 outline-none">
+      </div>
+      
+      <div class="flex justify-end gap-3">
+        <button onclick="closeEditModal()" class="px-5 py-2 bg-gray-200 text-gray-800 rounded font-bold hover:bg-gray-300 transition">Cancel</button>
+        <button onclick="saveEditRoom()" class="px-5 py-2 bg-blue-600 text-white rounded font-bold hover:bg-blue-700 transition">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="confirmModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-sm text-center border border-gray-200">
+      <h3 class="text-xl font-bold mb-2 text-gray-900">Confirm</h3>
+      <p class="text-gray-600 mb-6 text-sm">Mark this as done(guest checkout)?</p>
+      <div class="flex justify-center gap-3">
+        <button onclick="closeConfirm()" class="px-5 py-2 bg-gray-200 text-gray-800 rounded font-bold hover:bg-gray-300 transition">Cancel</button>
+        <button id="btnConfirmAction" class="px-5 py-2 bg-blue-600 text-white rounded font-bold hover:bg-blue-700 transition">Yes</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-3"></div>
+
+  <script>
+    const token = localStorage.getItem('adminToken');
+    if (!token) {
+      window.location.href = '/login.html';
+    }
+
+    const authHeaders = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    };
+
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `px-6 py-3 rounded shadow-lg text-white font-bold transition-all duration-300 transform translate-y-10 opacity-0 flex items-center gap-2`;
+      if (type === 'success') toast.classList.add('bg-green-600');
+      if (type === 'error') toast.classList.add('bg-red-600');
+      toast.innerHTML = message;
+      container.appendChild(toast);
+      setTimeout(() => toast.classList.remove('translate-y-10', 'opacity-0'), 10);
+      setTimeout(() => {
+        toast.classList.add('translate-y-10', 'opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    let actionToConfirm = null;
+    function openConfirm(actionFunc) {
+      actionToConfirm = actionFunc;
+      document.getElementById('confirmModal').classList.remove('hidden');
+    }
+    function closeConfirm() {
+      actionToConfirm = null;
+      document.getElementById('confirmModal').classList.add('hidden');
+    }
+    document.getElementById('btnConfirmAction').addEventListener('click', () => {
+      if (actionToConfirm) actionToConfirm();
+      closeConfirm();
+    });
+
+    function switchMenu(sectionId) {
+      document.getElementById('bookingSection').classList.add('hidden');
+      document.getElementById('roomSection').classList.add('hidden');
+      document.getElementById(sectionId).classList.remove('hidden');
+    }
+
+    function logout() {
+      localStorage.removeItem('adminToken');
+      window.location.href = '/login.html';
+    }
+
+    async function loadBookings() {
+      try {
+        const response = await fetch('/api/admin/bookings', { headers: authHeaders });
+        const bookings = await response.json();
+        const tbody = document.getElementById('bookingTableBody');
+        tbody.innerHTML = '';
+
+        if(bookings.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" class="text-center p-4 text-gray-500 font-semibold">No bookings yet</td></tr>';
+          return;
+        }
+
+        bookings.forEach(b => {
+          tbody.innerHTML += `
+            <tr class="hover:bg-gray-50 transition border-b">
+              <td class="p-3 font-semibold">${b.customerName}</td>
+              <td class="p-3">${b.customerPhone}</td>
+              <td class="p-3">${b.room.name}</td>
+              <td class="p-3">${new Date(b.checkInDate).toLocaleDateString('id-ID')}</td>
+              <td class="p-3">${new Date(b.checkOutDate).toLocaleDateString('id-ID')}</td>
+              <td class="p-3 text-center">
+                <button onclick="completeBooking(${b.id})" class="bg-blue-600 text-white px-3 py-1 text-xs font-bold rounded hover:bg-blue-700 transition">Done</button>
+              </td>
+            </tr>
+          `;
+        });
+      } catch (error) {
+        showToast('failed load booking', 'error');
+      }
+    }
+
+    function completeBooking(id) {
+      openConfirm(async () => {
+        try {
+          await fetch(`/api/admin/bookings/${id}`, { method: 'DELETE', headers: authHeaders });
+          showToast('Mark as done', 'success');
+          loadBookings(); 
+        } catch(e) {
+          showToast('failed process booking', 'error');
+        }
+      });
+    }
+
+    async function loadRooms() {
+      try {
+        const response = await fetch('/api/rooms'); 
+        const rooms = await response.json();
+        const tbody = document.getElementById('roomTableBody');
+        tbody.innerHTML = '';
+
+        if(rooms.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="3" class="text-center p-4 text-red-500 font-semibold">No room data</td></tr>';
+          return;
+        }
+
+        rooms.forEach(r => {
+          const imageUrl = r.imageUrl ? r.imageUrl : '';
+          tbody.innerHTML += `
+            <tr class="hover:bg-gray-50 transition border-b">
+              <td class="p-3">#${r.id}</td>
+              <td class="p-3 font-bold">${r.name}</td>
+              <td class="p-3 text-blue-700 font-semibold flex justify-between items-center">
+                Rp ${r.price.toLocaleString('id-ID')}
+                <button onclick="editRoom(${r.id}, '${r.name}', ${r.price}, '${imageUrl}')" class="bg-yellow-500 text-white px-3 py-1 text-xs font-bold rounded hover:bg-yellow-600 transition">Edit</button>
+              </td>
+            </tr>
+          `;
+        });
+      } catch (error) {
+        showToast('failed load rooms', 'error');
+      }
+    }
+
+    function editRoom(id, oldName, oldPrice, oldImage) {
+      document.getElementById('editRoomId').value = id;
+      document.getElementById('editRoomName').value = oldName;
+      document.getElementById('editRoomPrice').value = oldPrice;
+      document.getElementById('editRoomImage').value = oldImage; 
+      document.getElementById('editModal').classList.remove('hidden');
+    }
+
+    function closeEditModal() {
+      document.getElementById('editModal').classList.add('hidden');
+    }
+
+    async function saveEditRoom() {
+      const id = document.getElementById('editRoomId').value;
+      const newName = document.getElementById('editRoomName').value;
+      const newPrice = document.getElementById('editRoomPrice').value;
+      const newImage = document.getElementById('editRoomImage').value;
+
+      if (!newName || !newPrice || newPrice < 0) {
+        return showToast("Data not valid!", 'error');
+      }
+
+      try {
+        const response = await fetch(`/api/admin/rooms/${id}`, {
+          method: 'PUT',
+          headers: authHeaders,
+          body: JSON.stringify({ name: newName, price: newPrice, imageUrl: newImage }) 
+        });
+
+        if (response.ok) {
+          showToast("Room successfully updated", 'success');
+          closeEditModal();
+          loadRooms();
+        } else {
+          const err = await response.json();
+          showToast("failed: " + err.error, 'error');
+        }
+      } catch (error) {
+        showToast("server error", 'error');
+      }
+    }
+
+    document.getElementById('addRoomForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        name: document.getElementById('newRoomName').value,
+        price: document.getElementById('newRoomPrice').value,
+        imageUrl: document.getElementById('newRoomImage').value 
+      };
+
+      try {
+        const response = await fetch('/api/admin/rooms', {
+          method: 'POST',
+          headers: authHeaders,
+          body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+          showToast('Room succesfully updated', 'success');
+          document.getElementById('addRoomForm').reset();
+          loadRooms();
+        } else {
+          showToast('failed to add room', 'error');
+        }
+      } catch (error) {
+        showToast('server error', 'error');
+      }
+    });
+
+    loadBookings();
+    loadRooms();
+  </script>
+</body>
+</html>
