@@ -32,6 +32,8 @@ npx ts-node seed.ts
 npm run dev
 ```
 Aplikasi sekarang berjalan di `http://localhost:3000`
+UI User: http://localhost:3000/index.html
+UI Admin: http://localhost:3000/admin.html
 
 ---
 
